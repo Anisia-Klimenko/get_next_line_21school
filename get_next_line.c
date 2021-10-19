@@ -1,81 +1,95 @@
 #include "get_next_line.h"
 
-int	ft_check_endl(char *buf, int fd)
+char	*ft_save(char **save, char *str)
 {
-	int	i;
-	int	endl;
-	int	len;
+	char	*tmp;
+	char	*p;
+	int		len;
 
-	endl = 0;
-	len = 0;
-	while (!endl)
+	tmp = *save;
+	while (*tmp == '\n')
+		tmp++;
+	len = ft_strlen(tmp);
+	p = ft_strnchr(tmp, '\n', len);
+	if (p)
 	{
-		i = 0;
-		read(fd, buf, BUFFER_SIZE);
-		while (i < BUFFER_SIZE - 1 && buf[i] != '\0' && buf[i] != '\n')
-			i++;
-		len += i + 1;
-		if (buf[i] == '\0' || buf[i] == '\n')
-			endl = 1;
+		*p = '\0';
+		p++;
+		tmp = ft_strdup(p);
 	}
-	return (len - 1);
+	str = ft_strjoin(str, *save);
+	*save = tmp;
+	return (str);
 }
 
-char	*ft_copy(char *s, char *buf, int fd)
+char	*ft_no_save(int fd, char **save, char *str)
 {
-	int	len;
-	int	i;
+	int		rt;
+	char	buf[BUFFER_SIZE + 1];
+	char	*p;
 
-	len = ft_check_endl(buf, fd);
-	printf("buf - %s\n", buf);
-	i = 0;
-	while (i < len)
+	p = NULL;
+	rt = read(fd, buf, BUFFER_SIZE);
+	while (rt && !p)
 	{
-		read(fd, buf, 1);
-		s[i] = buf[0];
-		i++;
+		buf[rt] = '\0';
+		p = ft_strnchr(buf, '\n', rt);
+		if (p)
+		{
+			*p++ = '\0';
+			*save = ft_strdup(p);
+		}
+		str = ft_strjoin(str, buf);
+		rt = read(fd, buf, BUFFER_SIZE);
 	}
-	printf("---%s\n", s);
-	return (s);
+	return (str);
 }
 
 char	*get_next_line(int fd)
 {
-	char		buf[BUFFER_SIZE];
-	char		*s;
-	int static	index = 0;
-	int			count;
-	// int			rt;
+	static char	*save = NULL;
+	char		*str;
 
+	str = NULL;
 	if (fd < 0)
+		return (NULL);
+	if (save)
+		str = ft_save(&save, str);
+	if (!save)
+		str = ft_no_save(fd, &save, str);
+	if (!str && !save)
 		return (0);
-	count = 0;
-	while (read(fd, buf, 1) && count < index)
-	{
-		if (buf[0] == '\n' && buf[0] == '\0')
-			count++;
-	}
-	s = malloc(sizeof(char) * (ft_check_endl(buf, fd) + 1));
-	if (!s)
-		return (0);
-	index++;
-	printf("%d - ", index);
-	s = ft_copy(s, buf, fd);
-	return (s);
+	return (str);
 }
 
 int	main(void)
 {
 	int		fd;
-	// char	buf[BUFFER_SIZE];
+	char	*s;
 
 	fd = open("test.txt", O_RDONLY);
-	// printf("\nline len - %d\n", ft_check_endl(buf, fd));
+	s = NULL;
 	if (fd >= 0)
 	{
-		printf("%s\n", get_next_line(fd));
-		printf("%s\n", get_next_line(fd));
-		printf("%s\n", get_next_line(fd));
+		s = get_next_line(fd);
+		if (s)
+		{
+			printf("STR IN MAIN -> %s\n", s);
+			free(s);
+			s = get_next_line(fd);
+			printf("STR IN MAIN -> %s\n", s);
+			free(s);
+			s = get_next_line(fd);
+			printf("STR IN MAIN -> %s\n", s);
+			if (s)
+				printf("S\n");
+			free(s);
+			s = get_next_line(fd);
+			printf("STR IN MAIN -> %s\n", s);
+			free(s);
+			if (s)
+				printf("S\n");
+		}
 		close(fd);
 	}
 	return (0);
