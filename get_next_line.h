@@ -10,7 +10,8 @@
 
 char	*get_next_line(int fd);
 
-char	*ft_substr(char const *s, unsigned int start, size_t len);
+char	*ft_save(char **save, char *str);
+char	*ft_no_save(int fd, char **save, char *str);
 
 size_t	ft_strlen(const char *str);
 char	*ft_strnchr(const char *s, int c, int size);
