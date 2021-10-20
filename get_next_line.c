@@ -1,24 +1,30 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: acristin <acristin@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/10/20 13:45:38 by acristin          #+#    #+#             */
+/*   Updated: 2021/10/20 18:33:29 by acristin         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "get_next_line.h"
 
 char	*ft_check_save(char *str, char **save, char *p, char *tmp)
 {
-	if (ft_strlen(tmp) == 2 && tmp[1] == '\n')
-	{
-		str = malloc(sizeof(char) * 2);
-		str[0] = tmp[0];
-		str[1] = '\0';
-		*save = ft_strdup(p);
-		// printf("ok\n");
-	}
+	if (p == tmp)
+		str = ft_strjoin(str, "\n", 0);
 	else
 	{
-		// printf("okkk\n");
-		*p++ = '\0';
-		str = ft_strjoin(str, tmp);
-		*save = ft_strdup(p);
-		// printf("STR (CHECK) -> %s\n", str);
-		// printf("SAVE (CHECK) -> %s\n", tmp);
+		*p = '\0';
+		str = ft_strjoin(str, tmp, 1);
 	}
+	p++;
+	if (*save)
+		free(*save);
+	*save = ft_strdup(p, 0);
 	return (str);
 }
 
@@ -27,31 +33,20 @@ char	*ft_save(char **save, char *str)
 	char	*tmp;
 	char	*p;
 	int		len;
+	int		endl;
 
 	tmp = *save;
-	while (*tmp == '\n')
-		tmp++;
+	endl = 0;
 	len = ft_strlen(tmp);
 	p = ft_strnchr(tmp, '\n', len);
-	// printf("P (SAVE) -> %s\n", p);
-	// printf("SAVE (SAVE) -> %s\n", tmp);
 	if (p)
-	{
 		str = ft_check_save(str, save, p, tmp);
-		// if (ft_strlen(tmp) == 2 && tmp[1] == '\n')
-		// 	tmp[2] = '\n';
-		// *p++ = '\0';
-		// str = ft_strjoin(str, tmp);
-		// tmp = ft_strdup(p);
-		// *save = ft_strdup(p);
-	}
 	else
 	{
-		str = ft_strjoin(str, tmp);
+		str = ft_strjoin(str, tmp, endl);
+		free(*save);
 		*save = NULL;
 	}
-	// printf("SAVE (SAVE) -> %s\n", *save);
-	// printf("STR (SAVE) -> %s\n", str);
 	return (str);
 }
 
@@ -60,26 +55,24 @@ char	*ft_no_save(int fd, char **save, char *str)
 	int		rt;
 	char	buf[BUFFER_SIZE + 1];
 	char	*p;
+	int		endl;
 
 	p = NULL;
-	// printf("STR (NO SAVE BW) -> %s\n", str);
 	rt = read(fd, buf, BUFFER_SIZE);
+	if (rt < 0)
+		return (0);
+	endl = 0;
 	while (rt && !p)
 	{
 		buf[rt] = '\0';
 		p = ft_strnchr(buf, '\n', rt);
 		if (p)
-		{
-			*p++ = '\0';
-			*save = ft_strdup(p);
-		}
-		str = ft_strjoin(str, buf);
-		// printf("STR (NO SAVE IW) -> %s\n", str);
+			str = ft_check_save(str, save, p, buf);
+		else
+			str = ft_strjoin(str, buf, endl);
 		if (!p)
 			rt = read(fd, buf, BUFFER_SIZE);
 	}
-	// printf("SAVE (NO SAVE) -> %s\n", *save);
-	// printf("STR (NO SAVE) -> %s\n", str);
 	return (str);
 }
 
@@ -91,33 +84,17 @@ char	*get_next_line(int fd)
 	str = NULL;
 	if (fd < 0)
 		return (NULL);
-	// printf("SAVE -> %s\n", save);
 	if (save)
 		str = ft_save(&save, str);
-	if (!save)
+	if (!save && !str)
+		str = ft_no_save(fd, &save, str);
+	if (!save && str && str[ft_strlen(str) - 1] != '\n')
 		str = ft_no_save(fd, &save, str);
 	if (!str && !save)
+	{
+		free(save);
+		free(str);
 		return (0);
+	}
 	return (str);
 }
-
-// int	main(void)
-// {
-// 	int		fd;
-// 	char	*s;
-
-// 	fd = open("test.txt", O_RDONLY);
-// 	s = NULL;
-// 	if (fd >= 0)
-// 	{
-// 		s = get_next_line(fd);
-// 		while (s)
-// 		{
-// 			printf("STR IN MAIN -> %s\n\n", s);
-// 			free(s);
-// 			s = get_next_line(fd);
-// 		}
-// 		close(fd);
-// 	}
-// 	return (0);
-// }

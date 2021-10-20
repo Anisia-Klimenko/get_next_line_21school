@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line_utils.c                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: acristin <acristin@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/10/20 13:45:35 by acristin          #+#    #+#             */
+/*   Updated: 2021/10/20 18:02:05 by acristin         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "get_next_line.h"
 
 size_t	ft_strlen(const char *str)
@@ -55,7 +67,7 @@ void	*ft_memcpy(void *dest, const void *src, size_t n)
 	return (dest);
 }
 
-char	*ft_strdup(const char *s)
+char	*ft_strdup(const char *s, int endl)
 {
 	char	*dest;
 	int		i;
@@ -65,7 +77,7 @@ char	*ft_strdup(const char *s)
 	len = ft_strlen(s);
 	if (!len)
 		return (NULL);
-	dest = malloc(sizeof(*dest) * (len + 1));
+	dest = malloc(sizeof(*dest) * (len + 1 + endl));
 	if (!dest)
 		return (0);
 	while (s[i] != '\0')
@@ -73,32 +85,34 @@ char	*ft_strdup(const char *s)
 		dest[i] = s[i];
 		i++;
 	}
-	dest[i] = '\0';
+	dest[i] = '\n';
+	dest[i + endl] = '\0';
 	return (dest);
 }
 
-char	*ft_strjoin(char const *s1, char const *s2)
+char	*ft_strjoin(char *str, char const *buf, int endl)
 {
-	char	*s;
-	int		len1;
-	int		len2;
+	char	*dup;
+	int		lenstr;
+	int		lenbuf;
 
-	s = NULL;
-	if (s1 != NULL && s2 != NULL)
+	if (str != NULL && buf != NULL)
 	{
-		len1 = ft_strlen(s1);
-		len2 = ft_strlen(s2);
-		s = malloc(sizeof(char) * (len1 + len2 + 1));
-		if (s)
+		lenstr = ft_strlen(str);
+		lenbuf = ft_strlen(buf);
+		dup = ft_strdup(str, 0);
+		free(str);
+		str = malloc(sizeof(char) * (lenstr + lenbuf + 1 + endl));
+		if (str)
 		{
-			ft_memcpy(s, s1, len1);
-			ft_memcpy(s + len1, s2, len2);
-			s[len1 + len2] = '\0';
+			ft_memcpy(str, dup, lenstr);
+			ft_memcpy(str + lenstr, buf, lenbuf);
+			str[lenstr + lenbuf] = '\n';
+			str[lenstr + lenbuf + endl] = '\0';
 		}
+		free(dup);
 	}
-	else if (!s1)
-		s = ft_strdup(s2);
-	else if (!s2)
-		s = ft_strdup(s1);
-	return (s);
+	else if (!str)
+		str = ft_strdup(buf, endl);
+	return (str);
 }
