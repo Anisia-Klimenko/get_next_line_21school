@@ -6,12 +6,21 @@
 /*   By: acristin <acristin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/20 13:45:41 by acristin          #+#    #+#             */
-/*   Updated: 2021/10/20 18:35:41 by acristin         ###   ########.fr       */
+/*   Updated: 2021/10/25 13:50:34 by acristin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef GET_NEXT_LINE_H
 # define GET_NEXT_LINE_H
+
+# ifndef BUFFER_SIZE
+#  define BUFFER_SIZE 1
+# endif
+
+# if BUFFER_SIZE < 0
+#  undef BUFFER_SIZE
+#  define BUFFER_SIZE 0
+# endif
 
 # include <stdlib.h>
 # include <fcntl.h>

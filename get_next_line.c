@@ -6,7 +6,7 @@
 /*   By: acristin <acristin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/10/20 13:45:38 by acristin          #+#    #+#             */
-/*   Updated: 2021/10/20 18:33:29 by acristin         ###   ########.fr       */
+/*   Updated: 2021/10/24 10:52:41 by acristin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,9 @@
 
 char	*ft_check_save(char *str, char **save, char *p, char *tmp)
 {
+	char	*new;
+
+	new = NULL;
 	if (p == tmp)
 		str = ft_strjoin(str, "\n", 0);
 	else
@@ -22,9 +25,10 @@ char	*ft_check_save(char *str, char **save, char *p, char *tmp)
 		str = ft_strjoin(str, tmp, 1);
 	}
 	p++;
+	new = ft_strdup(p, 0);
 	if (*save)
 		free(*save);
-	*save = ft_strdup(p, 0);
+	*save = new;
 	return (str);
 }
 
@@ -82,7 +86,7 @@ char	*get_next_line(int fd)
 	char		*str;
 
 	str = NULL;
-	if (fd < 0)
+	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
 	if (save)
 		str = ft_save(&save, str);
